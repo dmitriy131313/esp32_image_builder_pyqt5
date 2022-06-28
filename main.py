@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QPlainTextEdit
-from m_ui import Ui_MainWindow  # импорт нашего сгенерированного файла
+from m_ui import Ui_MainWindow
 import sys
 from PartitionManager import *
 
@@ -13,13 +13,12 @@ class mywindow(QtWidgets.QMainWindow):
         self.prt = PartitionManager()
 
         self.ui.button_proj_dir.clicked.connect(self.setProjDir)
+        self.ui.button_make.clicked.connect(self.__make)
 
         self.ui.text_bl_offset.textChanged.connect(self.__checkBL_offset_input)
         self.ui.text_bl_size.textChanged.connect(self.__checkBL_size_input)
         self.ui.text_pt_offset.textChanged.connect(self.__checkPT_offset_input)
 
-        #self.__bl_offset_correct = True
-        #self.__bl_len_correct = True
         self.prt.setBootloaderOffset(self.ui.text_bl_offset.toPlainText())
         self.prt.setBootloaderSize(self.ui.text_bl_size.toPlainText())
         self.prt.setPartitionTableOffset(self.ui.text_pt_offset.toPlainText())
@@ -35,10 +34,17 @@ class mywindow(QtWidgets.QMainWindow):
             self.ui.button_make.setEnabled(True)
         except OSError as error :
             QMessageBox.warning(self, "Warning", str(error))
+            self.ui.button_make.setEnabled(False)
         except PartitionManagerException as error:
             QMessageBox.warning(self, "Warning", str(error))
+            self.ui.button_make.setEnabled(False)
         except ValueError as error:
             QMessageBox.warning(self, "Warning", str(error))
+            self.ui.button_make.setEnabled(False)
+
+    def __make(self):
+        name = QFileDialog.getSaveFileName(self, 'Save File')
+        self.prt.makeBinary(name)
 
     def __input_check(self, obj : QPlainTextEdit):
         color = '255, 0, 0' if re.search(r'^0[xX][0-9a-fA-F]+$', obj.toPlainText()) == None else '255, 255, 255'

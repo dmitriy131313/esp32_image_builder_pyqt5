@@ -68,12 +68,12 @@ class PartitionManager:
                 
                 part_data       = re.findall(r'\w+', line)
                 partit.name     = part_data[0]
-                partit.offset = part_data[3]
-                partit.len    = part_data[4]
+                partit.offset   = part_data[3]
+                partit.len      = part_data[4]
 
                 if (partit.name == 'nvs' or partit.name == 'phy_init' or partit.name == 'ota_0' or partit.name == 'ota_1'):
                     if (partit.name == 'nvs'):
-                        self.__partitions[1].len = int(partit.offset, 16) - int(self.__partitions[1].offset, 16)
+                        self.__partitions[1].len = hex(int(partit.offset, 16) - int(self.__partitions[1].offset, 16))
                     partit.path = None
                 elif (partit.name == 'otadata'):
                     partit.name = 'ota_data_initial.bin'
@@ -92,3 +92,22 @@ class PartitionManager:
                         raise PartitionManagerException(f'{partit.name} was not found')
 
                 self.__partitions.append(partit)
+
+    def makeBinary(self, out_filename):
+        outdata = bytearray()
+        outdata.extend(bytes().ljust(int(self.__partitions[0].offset, 16), b'\xFF'))
+
+        for item in self.__partitions:
+            if item.path == None:
+                outdata.extend(bytes().ljust(int(item.len, 16), b'\xFF'))
+            else:
+                with open(item.path + item.name, 'rb') as f:
+                    fdata=f.read()
+                    outdata.extend(fdata)
+                    extra_dummy_size = int(str(item.len), 16) - len(fdata)
+                    outdata.extend(bytes().ljust(extra_dummy_size, b'\xFF'))
+
+        f_name = out_filename[0] + '.bin'
+        print(f_name)
+        with open(f_name, 'wb') as out:
+            out.write(outdata)        
