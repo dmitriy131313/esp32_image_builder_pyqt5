@@ -41,10 +41,19 @@ class mywindow(QtWidgets.QMainWindow):
         except ValueError as error:
             QMessageBox.warning(self, "Warning", str(error))
             self.ui.button_make.setEnabled(False)
+        except TypeError:
+            QMessageBox.warning(self, "Warning", 'Project name in CMakeLists.txt is not found')
+            self.ui.button_make.setEnabled(False)
+        except Exception as error:
+            QMessageBox.warning(self, "Warning", 'Unhandled error: ' + str(error))
+            self.ui.button_make.setEnabled(False)
 
     def __make(self):
-        name = QFileDialog.getSaveFileName(self, 'Save File')
-        self.prt.makeBinary(name)
+        try:
+            name = QFileDialog.getSaveFileName(self, 'Save File')
+            self.prt.makeBinary(name)
+        except Exception as error:
+            QMessageBox.warning(self, "Warning", 'Error while making binary: ' + str(error))  
 
     def __input_check(self, obj : QPlainTextEdit):
         color = '255, 0, 0' if re.search(r'^0[xX][0-9a-fA-F]+$', obj.toPlainText()) == None else '255, 255, 255'

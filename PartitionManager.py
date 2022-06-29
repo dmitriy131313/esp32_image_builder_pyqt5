@@ -41,8 +41,11 @@ class PartitionManager:
         os.chdir(project_dir)
         with open(str(self.__proj_dir) + "CMakeLists.txt", 'r') as f:
             CMakeLists_file = f.read()
-            r = re.search(r'project\((\w+)\)', CMakeLists_file)
-            self.__proj_name = r.group(1)
+            r = re.search(r'project\(([a-zA-Z0-9_-]+)\)', CMakeLists_file)
+            if r is not None:
+                self.__proj_name = r.group(1)
+            else:
+                raise TypeError
 
     def findPartitions(self):
         f_bl = str(self.__proj_dir) + "build/bootloader/bootloader.bin"
